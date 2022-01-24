@@ -38,7 +38,6 @@ const actions = {
         const dbResults = await dataBase.get()
         commit('setProfileInfo', dbResults)
         commit('setProfileInitials')
-        console.log(dbResults)
     }
 
 }

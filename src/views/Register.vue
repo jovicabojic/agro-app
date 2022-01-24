@@ -23,8 +23,9 @@
           <div class="input">
             <input type="password" v-model="password" placeholder="Password">
           </div>
+          <div v-show="error" class="error">{{errorMsg}}</div>
         </div>
-        <button>Sign up</button>
+        <button @click.prevent="register">Sign up</button>
       </form>
     </div>
   </div>
@@ -33,7 +34,7 @@
 <script>
 import firebase from 'firebase/app';
 import "firebase/auth";
-// import db from "../firebase/firebaseInit"
+import db from "../firebase/firebaseInit"
 
 export default {
   name: 'Register',
@@ -44,19 +45,35 @@ export default {
       username: '',
       email: "",
       password: "",
-      error: ""
+      error: null,
+      errorMsg: ''
     };
   },
   methods: {
-    pressed() {
-      firebase
-          .auth()
-          .createUserWithEmailAndPassword(this.email, this.password)
-          .then(() => {
-            console.log("here");
-            this.$router.replace({name: "secret"});
-          })
-          .catch(error => (this.error = error));
+    async register() {
+      if (
+          this.firstName !== '' &&
+          this.lastName !== '' &&
+          this.username !== '' &&
+          this.email !== '' &&
+          this.password !== ''
+      ) {
+        this.error = false
+        this.errorMsg = ''
+        const firebaseAuth = await firebase.auth()
+        const result = await firebaseAuth.createUserWithEmailAndPassword(this.email, this.password);
+        const dataBase = db.collection('users').doc(result.user.uid)
+        await dataBase.set({
+          firstName: this.firstName,
+          lastName: this.lastName,
+          username: this.username,
+          email: this.email
+        })
+        await this.$router.push({name: 'Home'})
+        return;
+      }
+      this.error = true
+      this.errorMsg = 'Please fill out all the fields!'
     }
   }
 };
